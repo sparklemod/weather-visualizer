@@ -1,0 +1,19 @@
+services:
+  mysql:
+    container_name: weather-db
+    restart: no
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: weather
+    ports:
+      - '44444:3306'
+    volumes:
+      - ./mysql/db:/var/lib/mysql
+  app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql

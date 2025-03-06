@@ -13,7 +13,8 @@ src/main/frontend/generated/
 
 ### default ###
 HELP.md
-target/
+/target/*
+!/target/weather-app.jar
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

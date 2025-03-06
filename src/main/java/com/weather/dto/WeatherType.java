@@ -1,15 +1,15 @@
 package com.weather.dto;
 
 public enum WeatherType {
-    THUNDERSTORM(2, "thunderstorm.jpg"),
-    DRIZZLE(3, "drizzle.jpg"),
-    RAIN(5, "rain.jpg"),
-    SNOW(6, "snow.jpg"),
-    ATMOSPHERE(7, "atmosphere.jpg"),
-    CLOUDS(8, "clouds.jpg"),
-    CLEAR(80, "clear.jpg"),
+    THUNDERSTORM(2, "thunderstorm.png"),
+    DRIZZLE(3, "drizzle.png"),
+    RAIN(5, "rain.png"),
+    SNOW(6, "snow.png"),
+    ATMOSPHERE(7, "atmosphere.png"),
+    CLOUDS(8, "clouds.png"),
+    CLEAR(80, "clear.png"),
 
-    DEFAULT(-1, "error.jpg");
+    DEFAULT(-1, "error.png");
 
     private final int codePrefix;
     private final String imageUrl;

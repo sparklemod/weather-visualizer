@@ -1,9 +1,9 @@
 package com.weather.views;
 
-
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.weather.models.History;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -21,47 +21,47 @@ import java.util.List;
 @Route("")
 public class WeatherView extends VerticalLayout {
 
-    private final WeatherService weatherService;
-    private final HistoryService historyService;
-    private final NumberField latitudeField = new NumberField("Широта");
-    private final NumberField longitudeField = new NumberField("Долгота");
-    private final Button fetchWeatherButton = new Button("Показать погоду");
-
-    private final H3 cityInfo = new H3();
-    private final H2 weatherDescription = new H2();
-    private final H3 temperatureInfo = new H3();
-    private final Image weatherImage = new Image();
-
+    private H3 cityInfo = new H3();
+    private H2 weatherDescription = new H2();
+    private H3 temperatureInfo = new H3();
+    private Image weatherImage = new Image();
     private final Div historyContainer = new Div();
+
+    private WeatherService weatherService;
+    private HistoryService historyService;
+
+    private BeanValidationBinder<WeatherResponse> binder;
 
     public WeatherView(@Autowired WeatherService weatherService, @Autowired HistoryService historyService) {
         this.weatherService = weatherService;
         this.historyService = historyService;
 
-        setupUI();
-        loadHistory();
-    }
+        NumberField latitudeField = new NumberField("Широта");
+        NumberField longitudeField = new NumberField("Долгота");
 
-    private void setupUI() {
         latitudeField.setPlaceholder("59.57");
         longitudeField.setPlaceholder("30.19");
 
-        latitudeField.setMin(-90);
-        latitudeField.setMax(90);
-        longitudeField.setMin(-180);
-        longitudeField.setMax(180);
+        Button showWeatherButton = new Button("Показать погоду");
+        Span errorMessage = new Span();
 
-        fetchWeatherButton.addClickListener(event -> fetchWeather());
+        FormLayout formLayout = new FormLayout(latitudeField, longitudeField, showWeatherButton);
+        formLayout.setMaxWidth("500px");
+        formLayout.getStyle().set("margin", "0 auto");
 
-        VerticalLayout inputLayout = new VerticalLayout(latitudeField, longitudeField, fetchWeatherButton);
-        inputLayout.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        inputLayout.setSpacing(true);
+        formLayout.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+                new FormLayout.ResponsiveStep("490px", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP)
+        );
+
+        errorMessage.getStyle().set("color", "var(--lumo-error-text-color)");
+        errorMessage.getStyle().set("padding", "15px 0");
 
         VerticalLayout outputLayout = new VerticalLayout(cityInfo, weatherDescription, temperatureInfo, weatherImage);
         outputLayout.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         outputLayout.setSpacing(true);
 
-        VerticalLayout searchWeatherArea = new VerticalLayout(inputLayout, outputLayout);
+        VerticalLayout searchWeatherArea = new VerticalLayout(formLayout, outputLayout);
         searchWeatherArea.setWidth("100%");
         searchWeatherArea.setPadding(true);
         searchWeatherArea.setAlignItems(Alignment.CENTER);
@@ -85,26 +85,44 @@ public class WeatherView extends VerticalLayout {
         contentLayout.setHeight("100vh");
 
         add(contentLayout);
-    }
+        loadHistory();
 
-    private void fetchWeather() {
-        try {
-            WeatherResponse response = weatherService.fetchWeather(latitudeField.getValue(), longitudeField.getValue());
-            updateWeatherInfo(response);
+        binder = new BeanValidationBinder<>(WeatherResponse.class);
 
-            historyService.saveHistory(latitudeField.getValue(), longitudeField.getValue(), response.getDescription(), response.getCity(), response.getWeatherId());
+        binder.forField(latitudeField).asRequired().bind("latitude");
+        binder.forField(longitudeField).asRequired().bind("longitude");
+        binder.setStatusLabel(errorMessage);
 
-            loadHistory();
-        } catch (NumberFormatException e) {
-            Notification.show("Введите корректные координаты", 3000, Notification.Position.TOP_START);
-        }
+        showWeatherButton.addClickListener(e -> {
+            try {
+                WeatherResponse response = weatherService.fetchWeather(
+                        latitudeField.getValue(),
+                        longitudeField.getValue()
+                );
+
+                updateWeatherInfo(response);
+
+                historyService.saveHistory(
+                        latitudeField.getValue(),
+                        longitudeField.getValue(),
+                        response.getDescription(),
+                        response.getCity(),
+                        response.getWeatherId()
+                );
+
+                loadHistory();
+            } catch (Exception e2) {
+                e2.printStackTrace();
+                errorMessage.setText("Возникла ошибка, попробуйте позже");
+            }
+        });
     }
 
     private void updateWeatherInfo(WeatherResponse response) {
         weatherDescription.setText(response.getDescription());
         cityInfo.setText(response.getCity());
         temperatureInfo.setText(response.getTemp() + " градусов, ощущается как " + response.getFeelsLike());
-        weatherImage.setSrc(getImageUrl(response.getWeatherId()));
+        weatherImage.setSrc(WeatherType.fromWeatherId(response.getWeatherId()).getImageUrl());
         weatherImage.setMaxWidth("400px");
     }
 
@@ -124,10 +142,5 @@ public class WeatherView extends VerticalLayout {
             historyItem.getStyle().set("padding", "10px");
             historyContainer.add(historyItem);
         }
-    }
-
-
-    public String getImageUrl(Integer weatherId) {
-        return WeatherType.fromWeatherId(weatherId).getImageUrl();
     }
 }

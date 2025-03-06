@@ -67,8 +67,8 @@ public class WeatherView extends VerticalLayout {
         searchWeatherArea.setAlignItems(Alignment.CENTER);
 
         historyContainer.setWidthFull();
-        historyContainer.setHeight("80%");
-        historyContainer.getStyle().set("overflow-y", "auto").set("border", "1px solid #ccc").set("padding", "10px");
+        historyContainer.setHeight("90%");
+        historyContainer.getStyle().set("overflow-y", "auto").set("padding", "10px");
 
         VerticalLayout historySection = new VerticalLayout(new H2("История"), historyContainer);
         historySection.setWidth("50%");

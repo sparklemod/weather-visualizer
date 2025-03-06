@@ -9,7 +9,7 @@ services:
     ports:
       - '44444:3306'
     volumes:
-      - ./mysql/db:/var/lib/mysql
+      - weather:/var/lib/mysql
   app:
     build:
       context: .
@@ -17,3 +17,6 @@ services:
       - "8080:8080"
     depends_on:
       - mysql
+
+volumes:
+  weather: {}

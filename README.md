@@ -7,4 +7,6 @@
 
 Примеры
 ![app example](src/main/resources/git/example-3.png)
+
+Валидация
 ![app example](src/main/resources/git/example-2.png)

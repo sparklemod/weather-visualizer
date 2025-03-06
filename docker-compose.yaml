@@ -17,6 +17,7 @@ services:
       timeout: 2s
 
   app:
+    restart: on-failure
     build:
       context: .
     ports:
